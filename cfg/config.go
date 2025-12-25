@@ -3,6 +3,7 @@ package config
 import "github.com/jorgeAM/grpc-kata-payment-service/pkg/env"
 
 type Config struct {
+	AppEnv                     string
 	GrpcPort                   string
 	PostgresHost               string
 	PostgresPort               int
@@ -15,6 +16,7 @@ type Config struct {
 
 func LoadConfig() (*Config, error) {
 	return &Config{
+		AppEnv:                     env.GetEnv("APP_ENV", "local"),
 		GrpcPort:                   env.GetEnv("GRPC_PORT", "9091"),
 		PostgresHost:               env.GetEnv("POSTGRES_HOST", "localhost"),
 		PostgresPort:               env.GetEnv("POSTGRES_PORT", 5432),

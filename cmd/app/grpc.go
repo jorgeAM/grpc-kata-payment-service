@@ -5,6 +5,10 @@ import (
 	"net"
 
 	config "github.com/jorgeAM/grpc-kata-payment-service/cfg"
+	"github.com/jorgeAM/grpc-kata-payment-service/internal/payment/application/command"
+	paymentgrpc "github.com/jorgeAM/grpc-kata-payment-service/internal/payment/infrastructure/grpc"
+	paymentpb "github.com/jorgeAM/grpc-kata-proto/gen/go/payment/v1"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -17,12 +21,12 @@ func StartGRPCServer(cfg *config.Config, deps *config.Dependencies) error {
 
 	var opts []grpc.ServerOption
 
-	orderGrpcServer := ordergrpc.NewOrderGrpcServer(
-		command.NewCreateOrder(deps.OrderRepository),
+	paymentGRPCServer := paymentgrpc.NewPaymentGRPCServer(
+		command.NewCreatePayment(deps.PaymentRepository),
 	)
 
 	grpcServer := grpc.NewServer(opts...)
-	orderpb.RegisterOrderServiceServer(grpcServer, orderGrpcServer)
+	paymentpb.RegisterPaymentServer(grpcServer, paymentGRPCServer)
 
 	if cfg.AppEnv == "local" {
 		reflection.Register(grpcServer)
