@@ -1,6 +1,6 @@
-# Go Template
+# gRPC Payment Service
 
-A comprehensive boilerplate template for building production-ready Golang APIs with clean architecture principles. This template provides a complete foundation with domain-driven design, extensive utility packages, and enterprise-grade features for scalable API development.
+A comprehensive gRPC-based payment service built with clean architecture principles. This service provides a complete foundation with domain-driven design, extensive utility packages, and enterprise-grade features for scalable payment processing.
 
 ## Features
 
@@ -13,7 +13,7 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
 - **Structured Project Layout**: Organized folder structure following Go best practices
 - **Configuration Management**: Type-safe environment variable loading with defaults and validation
 - **Logging**: Structured logging with Zap integration and context-aware request tracking
-- **HTTP Routing**: Chi v5 router with comprehensive middleware stack
+- **gRPC Server**: High-performance gRPC server with protocol buffer definitions
 - **Database Integration**: PostgreSQL with `sqlx` and `goqu` query builder for type-safe SQL
 - **Migration System**: Database migrations using golang-migrate with up/down support
 
@@ -21,10 +21,8 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
 
 - **Password Hashing**: Secure bcrypt password hashing and comparison
 - **JWT Authentication**: Complete JWT system with token generation, validation, and type checking
-- **Authentication Middleware**: Bearer token validation with automatic user context injection
-- **Cookie Management**: Secure refresh token handling with HttpOnly and SameSite protection
-- **CORS Support**: Configurable cross-origin resource sharing with flexible origin/method control
-- **Request Security**: Request ID tracking, real IP detection, configurable timeout protection
+- **gRPC Interceptors**: Authentication and authorization middleware for gRPC services
+- **Request Security**: Request ID tracking, configurable timeout protection
 
 ### Advanced Query System
 
@@ -70,16 +68,13 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
 - **SNS**: Pub/sub messaging with batch publishing and message attributes
 - **SQS**: Message queue processing with configurable wait times and batch processing
 
-### HTTP Middleware Stack
+### gRPC Service Architecture
 
-- **Request ID**: Automatic request ID generation and tracking
-- **Structured Logging**: Request/response logging with method, path, status, duration
-- **Panic Recovery**: Graceful panic handling with stack trace logging
-- **Real IP Detection**: Accurate client IP detection behind proxies
-- **CORS**: Configurable cross-origin resource sharing
-- **Response Headers**: Automatic Content-Type and Accept header injection
-- **Timeout Management**: Per-request timeout with X-Timeout header support (default 15s)
-- **Authentication**: JWT Bearer token validation with user context injection
+- **Protocol Buffers**: Type-safe service definitions with automatic code generation
+- **gRPC Server**: High-performance server with streaming support
+- **Service Interceptors**: Authentication, logging, and error handling middleware
+- **Payment Processing**: Complete payment lifecycle management (create, process, query)
+- **Status Management**: Payment status tracking and updates
 
 ### Development Tools
 
@@ -109,7 +104,7 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
     # Application Configuration
     APP_ENV=local
     APP_NAME=grpc-kata-payment-service
-    PORT=8080
+    GRPC_PORT=9090
 
     # Database Configuration
     POSTGRES_HOST=localhost
@@ -132,7 +127,7 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
     make migration_up
     ```
 
-5.  **Run the application:**
+5.  **Run the gRPC server:**
     Start the server:
 
     ```sh
@@ -145,49 +140,61 @@ A comprehensive boilerplate template for building production-ready Golang APIs w
     go run cmd/app/main.go
     ```
 
-## API Endpoints
+## gRPC Service Endpoints
 
-### Health Check
+### Payment Service
 
-- `GET /health` - Health check endpoint
+The service provides the following gRPC methods for payment processing:
 
-### User Management
+- `CreatePayment` - Create a new payment
+- `GetPayment` - Retrieve payment by ID
+- `UpdatePaymentStatus` - Update payment status
 
-- `POST /api/v1/user` - Create a new user
-- `GET /api/v1/user/{id}` - Get user by ID
+**CreatePayment Request:**
 
-**Create User Request:**
-
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "securepassword"
+```protobuf
+message CreatePaymentRequest {
+  string customer_id = 1;
+  string order_id = 2;
+  float total_price = 3;
 }
 ```
 
-**Get User Response:**
+**CreatePayment Response:**
 
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "created_at": "2023-01-01T00:00:00Z",
-  "updated_at": "2023-01-01T00:00:00Z"
+```protobuf
+message CreatePaymentResponse {
+  string id = 1;
+  string customer_id = 2;
+  string order_id = 3;
+  float total_price = 4;
+  string status = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
 }
 ```
 
-### Query Parameters Support
+**GetPayment Request:**
 
-The API supports advanced querying through URL parameters:
+```protobuf
+message GetPaymentRequest {
+  string id = 1;
+}
+```
 
-- `order_by` - Field to order by
-- `order_type` - ASC or DESC
-- `page` - Page number (starts from 1)
-- `page_size` - Number of items per page
+**GetPayment Response:**
 
-Example: `GET /api/v1/users?order_by=created_at&order_type=DESC&page=1&page_size=10`
+```protobuf
+message GetPaymentResponse {
+  string id = 1;
+  string customer_id = 2;
+  string order_id = 3;
+  float total_price = 4;
+  string status = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+```
 
 ## Available Make Commands
 
@@ -266,14 +273,16 @@ url, err := signer.GeneratePresignedURL(ctx, "file.jpg", storage.JPEG)
 ```
 ├── cmd/app/                    # Application entry point
 │   ├── main.go                # Main application file with graceful shutdown
-│   └── router.go              # HTTP router configuration and middleware setup
-├── internal/user/              # User domain module (clean architecture)
+│   └── grpc.go                # gRPC server configuration and setup
+├── internal/payment/           # Payment domain module (clean architecture)
 │   ├── application/            # Use cases (commands and queries)
-│   │   ├── command/           # Write operations (CreateUser)
-│   │   └── query/             # Read operations (GetUser)
+│   │   ├── command/           # Write operations (CreatePayment)
+│   │   └── query/             # Read operations (GetPayment)
 │   ├── domain/                # Business logic and entities
-│   ├── infrastructure/        # External concerns (HTTP handlers, persistence)
-│   │   ├── http/              # HTTP handlers
+│   │   ├── payment.go         # Payment entity and repository interface
+│   │   └── status.go          # Payment status enumeration
+│   ├── infrastructure/        # External concerns (gRPC handlers, persistence)
+│   │   ├── grpc/              # gRPC service handlers
 │   │   └── persistence/       # Database repositories
 │   └── mock/                  # Generated mocks for testing
 ├── pkg/                       # Reusable packages (15+ utilities)
@@ -284,10 +293,7 @@ url, err := signer.GeneratePresignedURL(ctx, "file.jpg", storage.JPEG)
 │   ├── env/                   # Environment variable loading with type safety
 │   ├── errors/                # Custom error types with metadata and error codes
 │   ├── events/                # Event bus system (in-memory, SNS, SQS)
-│   ├── http/                  # HTTP utilities, middleware, response helpers
-│   │   ├── handler/           # Common HTTP handlers (health check)
-│   │   ├── middleware/        # Authentication, CORS, logging, timeout
-│   │   └── response/          # Response helper functions
+│   ├── http/                  # HTTP utilities and response helpers
 │   ├── log/                   # Structured logging with Zap
 │   ├── mailer/                # Multi-provider email sending
 │   ├── model/                 # Value objects (Country, Currency, Email, etc.)
@@ -307,7 +313,8 @@ url, err := signer.GeneratePresignedURL(ctx, "file.jpg", storage.JPEG)
 ## Key Dependencies
 
 - **Go 1.25.4** - Latest Go version
-- **Chi v5** - Lightweight HTTP router
+- **gRPC** - High-performance RPC framework
+- **Protocol Buffers** - Type-safe service definitions
 - **Zap** - Structured logging
 - **sqlx + goqu** - Database operations and query building
 - **AWS SDK v2** - S3, SES, SNS, SQS integration

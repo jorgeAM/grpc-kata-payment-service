@@ -25,7 +25,7 @@ type PostgresPaymentRepository struct {
 func NewPostgresPaymentRepository(db *sqlx.DB) *PostgresPaymentRepository {
 	return &PostgresPaymentRepository{
 		db:     db,
-		schema: "my_schema",
+		schema: "payment_schema",
 		table:  "payments",
 	}
 }
