@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jorgeAM/grpc-kata-payment-service/internal/payment/application/command"
 	paymentpb "github.com/jorgeAM/grpc-kata-proto/gen/go/payment/v1"
@@ -22,5 +23,19 @@ func NewPaymentGRPCServer(createPaymentApp *command.CreatePayment) *PaymentGRPCS
 }
 
 func (p *PaymentGRPCServer) Create(ctx context.Context, request *paymentpb.CreatePaymentRequest) (*paymentpb.CreatePaymentResponse, error) {
-	panic("unimplemented")
+	cmd := command.CreatePaymentCommand{
+		CustomerID: request.UserId,
+		OrderId:    request.OrderId,
+		TotalPrice: request.TotalPrice,
+	}
+
+	paymentID, err := p.createPaymentApp.Exec(ctx, &cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	return &paymentpb.CreatePaymentResponse{
+		PaymentId: paymentID,
+		BillId:    fmt.Sprintf("bill-%s", paymentID),
+	}, nil
 }

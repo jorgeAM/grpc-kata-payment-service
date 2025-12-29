@@ -195,7 +195,7 @@ grpcurl -plaintext localhost:9091 describe PaymentService
 ```bash
 grpcurl -plaintext \
   -d '{
-    "customer_id": "550e8400-e29b-41d4-a716-446655440001",
+    "user_id": "550e8400-e29b-41d4-a716-446655440001",
     "order_id": "550e8400-e29b-41d4-a716-446655440002",
     "total_price": 99.99
   }' \
