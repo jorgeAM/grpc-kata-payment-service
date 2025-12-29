@@ -7,17 +7,17 @@ import (
 	paymentpb "github.com/jorgeAM/grpc-kata-proto/gen/go/payment/v1"
 )
 
-var _ paymentpb.PaymentServer = (*PaymentGRPCServer)(nil)
+var _ paymentpb.PaymentServiceServer = (*PaymentGRPCServer)(nil)
 
 type PaymentGRPCServer struct {
 	createPaymentApp *command.CreatePayment
-	*paymentpb.UnimplementedPaymentServer
+	*paymentpb.UnimplementedPaymentServiceServer
 }
 
 func NewPaymentGRPCServer(createPaymentApp *command.CreatePayment) *PaymentGRPCServer {
 	return &PaymentGRPCServer{
-		createPaymentApp:           createPaymentApp,
-		UnimplementedPaymentServer: &paymentpb.UnimplementedPaymentServer{},
+		createPaymentApp:                  createPaymentApp,
+		UnimplementedPaymentServiceServer: &paymentpb.UnimplementedPaymentServiceServer{},
 	}
 }
 

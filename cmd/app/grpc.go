@@ -26,7 +26,7 @@ func StartGRPCServer(cfg *config.Config, deps *config.Dependencies) error {
 	)
 
 	grpcServer := grpc.NewServer(opts...)
-	paymentpb.RegisterPaymentServer(grpcServer, paymentGRPCServer)
+	paymentpb.RegisterPaymentServiceServer(grpcServer, paymentGRPCServer)
 
 	if cfg.AppEnv == "local" {
 		reflection.Register(grpcServer)

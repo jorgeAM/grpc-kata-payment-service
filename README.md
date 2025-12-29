@@ -146,9 +146,9 @@ A comprehensive gRPC-based payment service built with clean architecture princip
 
 The service provides the following gRPC methods for payment processing:
 
-- `CreatePayment` - Create a new payment
-- `GetPayment` - Retrieve payment by ID
-- `UpdatePaymentStatus` - Update payment status
+- `Create` - Create a new payment
+- `GetPayment` - Retrieve payment by ID (coming soon)
+- `UpdatePaymentStatus` - Update payment status (coming soon)
 
 **CreatePayment Request:**
 
@@ -173,6 +173,50 @@ message CreatePaymentResponse {
   google.protobuf.Timestamp updated_at = 7;
 }
 ```
+
+### Using grpcurl to Test the Service
+
+Once the server is running (on port 9090 by default), you can use grpcurl to interact with the payment service:
+
+**List available services:**
+
+```bash
+grpcurl -plaintext localhost:9091 list
+```
+
+**List methods for the Payment service:**
+
+```bash
+grpcurl -plaintext localhost:9091 describe PaymentService
+```
+
+**Create a new payment:**
+
+```bash
+grpcurl -plaintext \
+  -d '{
+    "customer_id": "550e8400-e29b-41d4-a716-446655440001",
+    "order_id": "550e8400-e29b-41d4-a716-446655440002",
+    "total_price": 99.99
+  }' \
+  localhost:9091 PaymentService/Create
+```
+
+**Example response:**
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440003",
+  "customer_id": "550e8400-e29b-41d4-a716-446655440001",
+  "order_id": "550e8400-e29b-41d4-a716-446655440002",
+  "total_price": 99.99,
+  "status": "PENDING",
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T10:30:00Z"
+}
+```
+
+**Note:** Make sure to use valid UUIDs for `customer_id` and `order_id` as the service validates these fields.
 
 **GetPayment Request:**
 
